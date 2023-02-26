@@ -5,13 +5,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return
   }
 
+  const initialViewName = 'view_name';
   const newElement = document.createElement('div');
   const database = window.location.pathname.split('/')[1];
   newElement.innerHTML = `<form id="viewCreateForm" action="/-/write" method="post">
   <input type="hidden" name="csrftoken" value="${getCsrfToken()}">
   <input type="hidden" name="database" value="${database}">
-  <label for="viewname" class="sr-only">View Name<input type="text" id="viewname" value="view_name"></label>
-  <input type="hidden" name="sql" id="viewSQL" value="CREATE VIEW view_name AS ${getSqlQuery()}">
+  <label for="viewname" class="sr-only">View Name&nbsp;&nbsp;<input type="text" id="viewname" value="${initialViewName}"></label>
+  <input type="hidden" name="sql" id="viewSQL" value="${viewSql(initialViewName)}">
   <input type="submit" value="Save View">
 </form>`;
   insertAfter(sqlForm, newElement);
@@ -32,5 +33,9 @@ function getCsrfToken() {
 }
 
 function updateSQL (evt) {
-  document.getElementById('viewSQL').value = 'CREATE VIEW '+ (evt.target.value) +' AS ' + getSqlQuery();
+  document.getElementById('viewSQL').value = viewSql(evt.target.value);
+}
+
+function viewSql(viewName) {
+  return `CREATE VIEW ${viewName} AS ${getSqlQuery()}`
 }
