@@ -31,6 +31,11 @@ setup(
     ],
     version=VERSION,
     packages=["datasette_save_as_view"],
+    package_data={
+        "datasette_save_as_view": [
+            "static/*.js",
+        ]
+    },
     entry_points={"datasette": ["save_as_view = datasette_save_as_view"]},
     install_requires=["datasette", "datasette-write"],
     extras_require={"test": ["pytest", "pytest-asyncio", "sqlite_utils"]},
