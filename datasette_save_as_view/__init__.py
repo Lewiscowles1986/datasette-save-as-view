@@ -1,33 +1,24 @@
-from pdb import set_trace
 from datasette import hookimpl
-
-
-@hookimpl
-def startup():
-    """When datasette initializes"""
-    pass
 
 
 @hookimpl
 def extra_js_urls(database, table, columns, view_name, request, datasette):
     async def inner():
-        if not await should_load(
-            database, table, columns, view_name, request, datasette
-        ):
-            return []
-        return [
-            {
-                "url": datasette.urls.static_plugins(
-                    "datasette-save-as-view", "datasette-save-as-view.js"
-                ),
-                "module": True,
-            }
-        ]
+        if await should_load(database, view_name, request, datasette):
+            return [
+                {
+                    "url": datasette.urls.static_plugins(
+                        "datasette-save-as-view", "datasette-save-as-view.js"
+                    ),
+                    "module": True,
+                }
+            ]
+        return []
 
     return inner
 
 
-async def should_load(database, table, columns, view_name, request, datasette):
+async def should_load(database, view_name, request, datasette):
     if view_name not in ("database", "table"):
         return False
 
