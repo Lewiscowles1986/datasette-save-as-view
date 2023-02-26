@@ -31,7 +31,7 @@ async def should_load(database, table, columns, view_name, request, datasette):
     if view_name not in ("database", "table"):
         return False
 
-    if table == "_internal":
+    if database == "_internal":
         return False
 
     if not await datasette.permission_allowed(

@@ -39,6 +39,7 @@ async def test_plugin_not_active_even_on_tables_or_queries_regular_user(db_path,
         ("/test?sql=select+1+-+1;", True),
         ("/test?sql=select+*+from+places;", True),
         ("/-/settings", False),
+        ("/_internal?sql=select+database_name%2C+table_name%2C+cid%2C+name%2C+type%2C+%5Bnotnull%5D%2C+default_value%2C+is_pk%2C+hidden+from+columns+order+by+database_name%2C+table_name%2C+name+limit+101", False)
     ],
 )
 async def test_plugin_only_on_tables_or_queries_admin(
