@@ -12,6 +12,26 @@ async def test_no_env_variable():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
+    "path",
+    [
+        ("/"),
+        ("/test"),
+        ("/test?sql=select+1+-+1;"),
+        ("/test?sql=select+*+from+places;"),
+        ("/-/settings"),
+    ],
+)
+async def test_plugin_not_active_even_on_tables_or_queries_regular_user(db_path, path):
+    ds = Datasette([db_path])
+    fragments = ("/datasette-save-as-view.js",)
+    response = await ds.client.get(path)
+    assert response.status_code == 200
+    for fragment in fragments:
+        assert fragment not in response.text
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
     "path,should_have_javascript",
     [
         ("/", False),
@@ -21,10 +41,14 @@ async def test_no_env_variable():
         ("/-/settings", False),
     ],
 )
-async def test_plugin_only_on_tables_or_queries(db_path, path, should_have_javascript):
+async def test_plugin_only_on_tables_or_queries_admin(
+    db_path, path, should_have_javascript
+):
     ds = Datasette([db_path])
     fragments = ("/datasette-save-as-view.js",)
-    response = await ds.client.get(path)
+    response = await ds.client.get(
+        path, cookies={"ds_actor": ds.sign({"a": {"id": "root"}}, "actor")}
+    )
     assert response.status_code == 200
     if should_have_javascript:
         for fragment in fragments:

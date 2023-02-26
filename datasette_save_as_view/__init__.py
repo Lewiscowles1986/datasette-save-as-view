@@ -9,21 +9,34 @@ def startup():
 
 
 @hookimpl
-def extra_js_urls(database, table, columns, view_name, datasette):
-    if not should_load(database, table, columns, view_name, datasette):
-        return []
-    return [
-        {
-            "url": datasette.urls.static_plugins(
-                "datasette-save-as-view", "datasette-save-as-view.js"
-            ),
-            "module": True,
-        }
-    ]
+def extra_js_urls(database, table, columns, view_name, request, datasette):
+    async def inner():
+        if not await should_load(
+            database, table, columns, view_name, request, datasette
+        ):
+            return []
+        return [
+            {
+                "url": datasette.urls.static_plugins(
+                    "datasette-save-as-view", "datasette-save-as-view.js"
+                ),
+                "module": True,
+            }
+        ]
+
+    return inner
 
 
-def should_load(database, table, columns, view_name, datasette):
+async def should_load(database, table, columns, view_name, request, datasette):
     if view_name not in ("database", "table"):
+        return False
+
+    if table == "_internal":
+        return False
+
+    if not await datasette.permission_allowed(
+        request.actor, "datasette-write", default=False
+    ):
         return False
 
     return True
